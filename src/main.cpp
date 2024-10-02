@@ -93,11 +93,11 @@ void setup() {
 }
 
 void loop() {
+  return;
   move_fw(3);
   move_back(3);
   move_left(3);
   move_right(3);
   rotate_right(3);
   rotate_left(3);
-  return;
 }
