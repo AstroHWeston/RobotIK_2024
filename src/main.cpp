@@ -1,30 +1,103 @@
 #include <Arduino.h>
-#include "NewPing.h"
-#include <Wire.h>
+#include <Servo.h>
 
-#define TRIGGER_PIN 31
-#define ECHO_PIN 30
-#define MAX_DISTANCE 400 // Centimeters.
+#define Servo_sl 9
+#define Servo_sd 10
+#define Servo_pl 11
+#define Servo_pd 12
 
-NewPing sonar0(31, 30, MAX_DISTANCE);
-NewPing sonar1(33, 32, MAX_DISTANCE);
-NewPing sonar2(35, 34, MAX_DISTANCE);
-NewPing sonar3(37, 36, MAX_DISTANCE);
+Servo motor_sl;
+Servo motor_sd;
+Servo motor_pl;
+Servo motor_pd;
 
+void motor_stop() {
+  motor_pd.write(90);
+  motor_pl.write(90);
+  motor_sl.write(90);
+  motor_sd.write(90);
+}
+
+void move_fw(int time) { // Kretanje naprijed
+  for (int i = 90; i >= 0; i--) {
+    motor_pd.write(i);
+    motor_pl.write(180 - i);
+    motor_sl.write(i);
+    motor_sd.write(180 - i);
+  }
+  delay(time * 1000);
+  motor_stop();
+}
+
+void move_back(int time) { // Kretanje natrag
+  for (int i = 90; i >= 0; i--) {
+    motor_pd.write(180 - i);
+    motor_pl.write(i);
+    motor_sl.write(180 - i);
+    motor_sd.write(i);
+  }
+  delay(time * 1000);
+  motor_stop();
+}
+
+void move_right(int time) { // Kretanje desno
+  for (int i = 90; i >= 0; i--) {
+    motor_pd.write(i);
+    motor_pl.write(180 - i);
+    motor_sl.write(180 - i);
+    motor_sd.write(i);
+  }
+  delay(time * 1000);
+  motor_stop();
+}
+
+void move_left(int time) { // Kretanje lijevo
+  for (int i = 90; i >= 0; i--) {
+    motor_pd.write(180 - i);
+    motor_pl.write(i);
+    motor_sl.write(i);
+    motor_sd.write(180 - i);
+  }
+  delay(time * 1000);
+  motor_stop();
+}
+
+void rotate_right(int time) { // Rotacija desno 
+  for (int i = 90; i >= 0; i--) {
+    motor_pd.write(90);
+    motor_pl.write(180 - i);
+    motor_sl.write(180 - i);
+    motor_sd.write(90);
+  }
+  delay(time * 1000);
+  motor_stop();
+}
+
+void rotate_left(int time) { // Rotacija lijevo 
+  for (int i = 90; i >= 0; i--) {
+    motor_pd.write(i);
+    motor_pl.write(90);
+    motor_sl.write(90);
+    motor_sd.write(i);
+  }
+  delay(time * 1000);
+  motor_stop();
+}
 
 void setup() {
   Serial.begin(9600);
+  motor_sl.attach(Servo_sl);
+  motor_sd.attach(Servo_sd);
+  motor_pl.attach(Servo_pl);
+  motor_pd.attach(Servo_pd);
 }
 
 void loop() {
-  Serial.print("Distance = ");
-  Serial.print(sonar0.ping_cm());
-  Serial.print(" - ");
-  Serial.print(sonar1.ping_cm());
-  Serial.print(" - ");
-  Serial.print(sonar2.ping_cm());
-  Serial.print(" - ");
-  Serial.print(sonar3.ping_cm());
-  Serial.println(" cm");
-  delay(500);
+  move_fw(3);
+  move_back(3);
+  move_left(3);
+  move_right(3);
+  rotate_right(3);
+  rotate_left(3);
+  return;
 }
