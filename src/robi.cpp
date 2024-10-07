@@ -1,4 +1,4 @@
-#include "NewPing.h"              // UZV senzor
+#include <NewPing.h>              // UZV senzor
 #include <LiquidCrystal_I2C.h>    // LCD
 #include <Wire.h>                 // I2C komunikacija
 #include "WS2812-SOLDERED.h"      // LED traka
@@ -43,8 +43,9 @@ APDS_9960 apds;
 #define PIN       6     // pin na koji je spojena LED traka
 #define NUMPIXELS 10
 WS2812 pixels(NUMPIXELS, PIN);
+int granica = 15;
 
-#define GRANICA   15;     // duljina kod koje ragira na prepreku
+//#define GRANICA   15;     // duljina kod koje ragira na prepreku
 int nprog = 0;            // brojilo programa
 int start = 1;            // početak programa
 // boje ********************
@@ -360,29 +361,24 @@ void okret_180() {
 }
 
 void crossing_F() {
-  if(sonarR.ping_cm()>granica) {
-    move_right(0,0);
-  } else {
-      if(sonarF.ping_cm()>granica) {
-      move_fw(0,0);
-    }
-  } else {
-    if(sonarL.ping_cm()>granica) {
-      move_left(0,0);
-    }
-  }
-  else move_back();
+  if (sonarR.ping_cm() > granica) {
+    move_right();
+  } else if (sonarF.ping_cm() > granica) {
+    move_fw();
+  } else if (sonarL.ping_cm() > granica) {
+    move_left();
+  } else move_back();
 }
 
 void crossing_L() {
-  if(sonarF.ping_cm()>granica) {
+  if (sonarF.ping_cm() < granica) {
     move_fw();
   } else {
-      if(sonarL.ping_cm()>granica) {
+      if(sonarL.ping_cm() < granica) {
       move_left();
     }
   } else {
-    if(sonarB.ping_cm()>granica) {
+    if(sonarB.ping_cm() < granica) {
       move_back();
     }
   }
