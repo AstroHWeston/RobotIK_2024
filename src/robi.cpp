@@ -1,4 +1,4 @@
-#include <NewPing.h>              // UZV senzor
+#include "NewPing.h"              // UZV senzor
 #include <LiquidCrystal_I2C.h>    // LCD
 #include <Wire.h>                 // I2C komunikacija
 #include "WS2812-SOLDERED.h"      // LED traka
@@ -36,6 +36,8 @@ Servo motor_sl;
 Servo motor_sd;
 Servo motor_pl;
 Servo motor_pd;
+int maxP = 120;
+int maxN = 180 - maxP;
 
 // inicijalizacija svega
 LiquidCrystal_I2C lcd(0x27, 2, 16); // Define LCD object
@@ -43,9 +45,8 @@ APDS_9960 apds;
 #define PIN       6     // pin na koji je spojena LED traka
 #define NUMPIXELS 10
 WS2812 pixels(NUMPIXELS, PIN);
-int granica = 15;
 
-//#define GRANICA   15;     // duljina kod koje ragira na prepreku
+#define GRANICA   15;     // duljina kod koje ragira na prepreku
 int nprog = 0;            // brojilo programa
 int start = 1;            // početak programa
 // boje ********************
@@ -134,18 +135,18 @@ void setup() {
   */
   // test LED trake
   pixels.begin();
-  lcd.setCursor(0, 1);
-  lcd.print("                ");
-  lcd.print("LED traka");
+//  lcd.setCursor(0, 1);
+//  lcd.print("                ");
+//  lcd.print("LED traka");
   pixels.clear();
-  lcd.setCursor(10, 1);
-  lcd.print("Crvena");
+//  lcd.setCursor(10, 1);
+//  lcd.print("Crvena");
   crvena();
-  lcd.setCursor(10, 1);
-  lcd.print("Zelena");
+//  lcd.setCursor(10, 1);
+//  lcd.print("Zelena");
   zelena();
-  lcd.setCursor(10, 1);
-  lcd.print("Plava ");
+//  lcd.setCursor(10, 1);
+//  lcd.print("Plava ");
   plava();
   // spoji motore
   motor_sl.attach(Servo_sl);
@@ -156,7 +157,8 @@ void setup() {
 
 void loop() {
   // TEST *************
-  P1();
+  move_fw(200); // --- 200 ms == 15 mm
+  //P1();
   //if(nprog==0) P1();
   //if(nprog==1) P2();
 }
@@ -175,9 +177,13 @@ void P1() {
     delay(1000);
     pixels.clear();
   }
-  if(X=0) {
+  if(X==0) {
     motor_stop();
+    delay(500);
     okret_180();
+    reset_display();
+    lcd.print("STAO SAM");
+    for(;;);
     nprog=1;
   }
 }
@@ -189,19 +195,19 @@ void P2() {
   d=pracenje();
   switch(d) {
     case 6:
-      move_fw();       // idi ravno naprijed
+      move_fw(0);       // idi ravno naprijed
       break;
     case 4:           // okreni lijevo 90
       break;
     default:
-      move_fw();       // idi ravno naprijed
+      move_fw(0);       // idi ravno naprijed
       break;
   }
   if(d==1) {
     motor_stop();
     bojica=boja();
     if(bojica==bG) motor_stop();
-    else move_fw();
+    else move_fw(0);
   }
 }
 
@@ -211,7 +217,7 @@ int prati_P1() {
   start=0;      // testiranje
   //***************************
   while(start==1) {             // izađi iz startnog polja
-    move_fw();
+    move_fw(0);
     delay(2000);
     d=pracenje();
     if(d!=0 && d!=9) start=0;
@@ -219,15 +225,20 @@ int prati_P1() {
   if(start==0) {
     d=pracenje();
     switch(d) {
+      case 0:
+        motor_stop();
+        break;
       case 6:
-        move_fw();      // idi ravno naprijed
+        move_fw(0);           // idi ravno naprijed
         break;
-      case 5:           // okreni malo lijevo
+      case 5:                 // okreni malo lijevo
+        rotate_left(200);
         break;
-      case 7:           // okreni malo desno
+      case 7:                 // okreni malo desno
+      rotate_right(200);
         break;
       default:
-        move_fw();      // idi ravno naprijed
+        move_fw(0);           // idi ravno naprijed
         break;
     }
   }
@@ -253,7 +264,7 @@ int pracenje() {
       n++;
     }
   }
-  lcd.clear();
+/*  lcd.clear();
   lcd.setCursor(0,0);
   lcd.print(rez[0]);
   lcd.setCursor(5,0);
@@ -263,7 +274,7 @@ int pracenje() {
   lcd.setCursor(2,1);
   lcd.print(rez[1]);
   lcd.setCursor(7,1);
-  lcd.print(rez[3]);
+  lcd.print(rez[3]); */
   if(n==0) odstup=0;                  // odstup==0 - nema linije, sve je bijelo
   else if(n==30) odstup=9;            // 9 - raskršće L i D
   else if(n==24) odstup=1;            // 1 - invertirano područje 
@@ -300,87 +311,123 @@ void motor_stop() {
   motor_sd.write(90);
 }
 
-void move_fw() { // Kretanje naprijed
-  for (int i = 90; i >= 0; i--) {
+void move_fw(int d) { // Kretanje naprijed
+  reset_display();
+  for (int i = 90; i >= maxN; i--) {
     motor_pd.write(i);
     motor_pl.write(180 - i);
     motor_sl.write(180 - i);
     motor_sd.write(i);
   }
+  lcd.print(String(d));
+  if(d > 0) {
+    delay(d);
+    motor_stop();
+  }
+  delay(5000);
 }
 
-void move_back() { // Kretanje natrag
-  for (int i = 90; i >= 0; i--) {
+void move_back(int d) { // Kretanje natrag
+  for (int i = 90; i >= maxN; i--) {
     motor_pd.write(180 - i);
     motor_pl.write(i);
     motor_sl.write(i);
     motor_sd.write(180 - i);
   }
+  if(d > 0) delay(d);
 }
 
-void move_right() { // Kretanje desno
-  for (int i = 90; i >= 0; i--) {
+void move_right(int d) { // Kretanje desno
+  for (int i = 90; i >= maxN; i--) {
     motor_pd.write(180 - i);
     motor_pl.write(180 - i);
     motor_sl.write(i);
     motor_sd.write(i);
   }
+  if(d > 0) delay(d);
 }
 
-void move_left() { // Kretanje lijevo
-  for (int i = 90; i >= 0; i--) {
+void move_left(int d) { // Kretanje lijevo
+  for (int i = 90; i >= maxN; i--) {
     motor_pd.write(i);
     motor_pl.write(i);
     motor_sl.write(180 - i);
     motor_sd.write(180 - i);
   }
+  if(d > 0) delay(d);
 }
 
-void rotate_right() { // Rotacija desno
-  for (int i = 90; i >= 0; i--) {
+void rotate_right(int d) { // Rotacija desno
+  for (int i = 90; i >= maxN; i--) {
     motor_pd.write(180 - i);
     motor_pl.write(180 - i);
     motor_sl.write(90);
     motor_sd.write(90);
   }
+  if(d > 0) delay(d);
 }
 
-void rotate_left() { // Rotacija lijevo
-  for (int i = 90; i >= 0; i--) {
+void rotate_left(int d) { // Rotacija lijevo
+  for (int i = 90; i >= maxN; i--) {
     motor_pd.write(i);
     motor_pl.write(i);
     motor_sl.write(90);
     motor_sd.write(90);
   }
+  if(d > 0) delay(d);
 }
 
-void okret_180() {
-  rotate_right();
-  delay(500);
+void okret_90() {
+  for (int i = 90; i >= maxN; i--) {
+    motor_pd.write(180 - i);
+    motor_pl.write(180 - i);
+    motor_sl.write(180 - i);
+    motor_sd.write(180 - i);
+  }
+  delay(1550);
   motor_stop();
 }
 
+void okret_180() {
+  reset_display();
+  lcd.print("OKRET!");
+  for (int i = 90; i <= maxP; i++) { //prije maxp je bilo 180
+    motor_pd.write(i);
+    motor_pl.write(i);
+    motor_sl.write(i);
+    motor_sd.write(i);
+  }
+  delay(3100);
+  motor_stop();
+}
+/*
 void crossing_F() {
-  if (sonarR.ping_cm() > granica) {
-    move_right();
-  } else if (sonarF.ping_cm() > granica) {
-    move_fw();
-  } else if (sonarL.ping_cm() > granica) {
-    move_left();
-  } else move_back();
+  if(sonarR.ping_cm()>granica) {
+    move_right(0,0);
+  } else {
+      if(sonarF.ping_cm()>granica) {
+      move_fw(0,0);
+    }
+  } else {
+    if(sonarL.ping_cm()>granica) {
+      move_left(0,0);
+    }
+  }
+  else move_back();
 }
 
 void crossing_L() {
-  if (sonarF.ping_cm() < granica) {
+  if(sonarF.ping_cm()>granica) {
     move_fw();
   } else {
-      if(sonarL.ping_cm() < granica) {
+      if(sonarL.ping_cm()>granica) {
       move_left();
     }
   } else {
-    if(sonarB.ping_cm() < granica) {
+    if(sonarB.ping_cm()>granica) {
       move_back();
     }
   }
   else move_right();
 }
+*/
