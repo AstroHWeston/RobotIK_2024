@@ -10,8 +10,8 @@ const int uzvF = 0;
 const int uzvB = 1;
 const int uzvL = 2;
 const int uzvR = 3;
-const int trigPin[] = {24,26,28,30};  
-const int echoPin[] = {25,27,29,31};
+const int trigPin[] = {31, 33, 35, 37};  
+const int echoPin[] = {30, 32, 34, 36};
 
 // Maximum distance we want to ping for (in centimeters).
 #define MAX_DISTANCE 400  
@@ -101,12 +101,26 @@ void plava() {
     delay(20);
   }
 }
-//***************************************************
-// Motori - Kretanje u smjerovima
+
 void reset_display() {
   lcd.clear();
   lcd.setCursor(0, 0);
 }
+//***************************************************
+// Definicija distanca
+int minDist = 20;
+enum Direction {
+  Forward,      // 0
+  Backward,     // 1
+  Left,         // 2
+  Right,        // 3
+  None          // 4
+};
+Direction oldDir = Forward;
+Direction currentDir = Forward;
+Direction newDir = None;
+//***************************************************
+// Motori - Kretanje u smjerovima
 
 void motor_stop() {
   motor_pd.write(90);
@@ -115,70 +129,86 @@ void motor_stop() {
   motor_sd.write(90);
 }
 
-void move_fw(int d) { // Kretanje naprijed
-  reset_display();
+void move_fw(int d = 0) { // Kretanje naprijed
+  currentDir = Forward;
   for (int i = 90; i >= maxN; i--) {
     motor_pd.write(i);
     motor_pl.write(180 - i);
     motor_sl.write(180 - i);
     motor_sd.write(i);
   }
-  lcd.print(String(d));
   if(d > 0) {
     delay(d);
     motor_stop();
   }
-  delay(5000);
 }
 
-void move_back(int d) { // Kretanje natrag
+void move_back(int d = 0) { // Kretanje natrag
+  currentDir = Backward;
   for (int i = 90; i >= maxN; i--) {
     motor_pd.write(180 - i);
     motor_pl.write(i);
     motor_sl.write(i);
     motor_sd.write(180 - i);
   }
-  if(d > 0) delay(d);
+  if(d > 0) {
+    delay(d);
+    motor_stop();
+  }
 }
 
-void move_right(int d) { // Kretanje desno
+void move_right(int d = 0) { // Kretanje desno
+  currentDir = Right;
   for (int i = 90; i >= maxN; i--) {
     motor_pd.write(180 - i);
     motor_pl.write(180 - i);
     motor_sl.write(i);
     motor_sd.write(i);
   }
-  if(d > 0) delay(d);
+  if(d > 0) {
+    delay(d);
+    motor_stop();
+  }
 }
 
-void move_left(int d) { // Kretanje lijevo
+void move_left(int d = 0) { // Kretanje lijevo
+  currentDir = Left;
   for (int i = 90; i >= maxN; i--) {
     motor_pd.write(i);
     motor_pl.write(i);
     motor_sl.write(180 - i);
     motor_sd.write(180 - i);
   }
-  if(d > 0) delay(d);
+  if(d > 0) {
+    delay(d);
+    motor_stop();
+  }
 }
 
-void rotate_right(int d) { // Rotacija desno
+void rotate_right(int d = 0) { // Rotacija desno
   for (int i = 90; i >= maxN; i--) {
     motor_pd.write(180 - i);
     motor_pl.write(180 - i);
     motor_sl.write(90);
     motor_sd.write(90);
   }
-  if(d > 0) delay(d);
+  if(d > 0) {
+    delay(d);
+    motor_stop();
+  }
 }
 
-void rotate_left(int d) { // Rotacija lijevo
+void rotate_left(int d = 0) { // Rotacija lijevo
   for (int i = 90; i >= maxN; i--) {
     motor_pd.write(i);
     motor_pl.write(i);
     motor_sl.write(90);
     motor_sd.write(90);
   }
-  if(d > 0) delay(d);
+  if(d > 0) {
+    delay(d);
+    motor_stop();
+  }
 }
 
 void okret_90() {
@@ -248,9 +278,9 @@ int pracenje() {
 void setup() {
   lcd.init();
   lcd.backlight();
-  Serial.begin(115200);
+  Serial.begin(9600);
   lcd.setCursor(0, 0);
-  lcd.print("Inicijalizacija...");
+  lcd.print("Initializing...");
   //TCRT5000 inicijalizacija
   for(int i=0;i<5;i++) {
       pinMode(linApin[i], INPUT);
@@ -297,14 +327,99 @@ void setup() {
   motor_pd.attach(Servo_pd);
 }
 
+
 void loop() {
   // TEST *************
-  int distance = sonarF.ping_cm();
-  while (distance > 10) {
-    move_fw(200); // --- 200 ms == 15 mm
-  }
-  return;
+  // --- 200 ms == 15 mm
+  reset_display();
+  int distanceF = sonarF.ping_cm();
+  int distanceB = sonarB.ping_cm();
+  int distanceL = sonarL.ping_cm();
+  int distanceR = sonarR.ping_cm();
+  lcd.setCursor(10, 1);
   
+  if (distanceR > minDist) {
+    lcd.print("R");
+    newDir = Right;
+    //move_right();
+  } else if (distanceF > minDist) {
+    lcd.print("F");
+    newDir = Forward;
+    //move_fw();
+  } else if (distanceL > minDist) {
+    lcd.print("L");
+    newDir = Left;
+    //move_left();
+  } else {
+    lcd.print("B");
+    newDir = Backward;
+    //move_back();
+  }
+
+  reset_display();
+  lcd.print("CD: " + String(currentDir));
+  lcd.setCursor(0, 1);
+  lcd.print("ND: " + String(newDir));
+  Serial.print("Distance Left: " + String(distanceL) + " cm");
+  Serial.println();
+  Serial.print("Distance Right: " + String(distanceR) + " cm");
+  Serial.println();
+  Serial.print("Distance Forward: " + String(distanceF) + " cm");
+  Serial.println();
+  Serial.print("Distance Backward: " + String(distanceB) + " cm");
+  Serial.println();
+  Serial.print("ND: " + String(newDir));
+  Serial.println();
+  Serial.print("OD: " + String(oldDir));
+  Serial.println();
+  Serial.print("CD: " + String(currentDir));
+  Serial.println();
+  
+  if (newDir == oldDir) {
+    currentDir = newDir;
+    switch (currentDir) {
+      case Right:
+        move_right();
+        break;
+      case Forward:
+        move_fw();
+        break;
+      case Left:
+        move_left();
+        break;
+      case Backward:
+        move_back();
+        break;
+      default:
+        lcd.print("broken");
+        break;
+    }
+  } else {
+    oldDir = newDir;
+    motor_stop();
+    reset_display();
+    delay(1500);
+    lcd.print(String(currentDir));
+    switch (currentDir) {
+      case Right:
+        move_right(1000);
+        break;
+      case Forward:
+        move_fw(1250);
+        break;
+      case Left:
+        move_left(1000);
+        break;
+      case Backward:
+        move_back(1000);
+        break;
+      default:
+      lcd.print("broken");
+        break;
+    }
+  }
+  
+  delay(100);
   //P1();
   //if(nprog==0) P1();
   //if(nprog==1) P2();
