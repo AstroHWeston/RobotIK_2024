@@ -82,7 +82,7 @@ void crvena() {
     delay(20);
   }
 }
-
+//***************************************************
 void zelena() {
   for (int i = 0; i < NUMPIXELS; i++) {
     pixels.setPixelColor(i, pixels.Color(0, 150, 0));
@@ -90,7 +90,7 @@ void zelena() {
     delay(20);
   }  
 }
-
+//***************************************************
 void zuta() {
   for (int i = 0; i < NUMPIXELS; i++) {
     pixels.setPixelColor(i, pixels.Color(150, 150, 0));
@@ -98,7 +98,7 @@ void zuta() {
     delay(20);
   }  
 }
-
+//***************************************************
 void plava() {
     for (int i = 0; i < NUMPIXELS; i++) {
     pixels.setPixelColor(i, pixels.Color(0, 0, 150));
@@ -106,7 +106,7 @@ void plava() {
     delay(20);
   }
 }
-
+//***************************************************
 void reset_display() {
   lcd.clear();
   lcd.setCursor(0, 0);
@@ -126,14 +126,13 @@ Direction currentDir = Forward;
 Direction newDir = None;
 //***************************************************
 // Motori - Kretanje u smjerovima
-
 void motor_stop() {
   motor_pd.write(90);
   motor_pl.write(90);
   motor_sl.write(90);
   motor_sd.write(90);
 }
-
+//***************************************************
 void move_fw(int d = 0) { // Kretanje naprijed
   currentDir = Forward;
   for (int i = 90; i >= maxN; i--) {
@@ -147,7 +146,7 @@ void move_fw(int d = 0) { // Kretanje naprijed
     motor_stop();
   }
 }
-
+//***************************************************
 void move_back(int d = 0) { // Kretanje natrag
   currentDir = Backward;
   for (int i = 90; i >= maxN; i--) {
@@ -161,7 +160,7 @@ void move_back(int d = 0) { // Kretanje natrag
     motor_stop();
   }
 }
-
+//***************************************************
 void move_right(int d = 0) { // Kretanje desno
   currentDir = Right;
   for (int i = 90; i >= maxN; i--) {
@@ -175,7 +174,7 @@ void move_right(int d = 0) { // Kretanje desno
     motor_stop();
   }
 }
-
+//***************************************************
 void move_left(int d = 0) { // Kretanje lijevo
   currentDir = Left;
   for (int i = 90; i >= maxN; i--) {
@@ -189,7 +188,7 @@ void move_left(int d = 0) { // Kretanje lijevo
     motor_stop();
   }
 }
-
+//***************************************************
 void rotate_right(int d = 0) { // Rotacija desno
   for (int i = 90; i >= maxN; i--) {
     motor_pd.write(180 - i);
@@ -202,7 +201,7 @@ void rotate_right(int d = 0) { // Rotacija desno
     motor_stop();
   }
 }
-
+//***************************************************
 void rotate_left(int d = 0) { // Rotacija lijevo
   for (int i = 90; i >= maxN; i--) {
     motor_pd.write(i);
@@ -215,7 +214,7 @@ void rotate_left(int d = 0) { // Rotacija lijevo
     motor_stop();
   }
 }
-
+//***************************************************
 void okret_90() {
   for (int i = 90; i >= maxN; i--) {
     motor_pd.write(180 - i);
@@ -226,7 +225,7 @@ void okret_90() {
   delay(1550);
   motor_stop();
 }
-
+//***************************************************
 void okret_180() {
   reset_display();
   lcd.print("OKRET!");
@@ -240,7 +239,6 @@ void okret_180() {
   motor_stop();
 }
 //***************************************************
-// Pracenje idk
 int pracenje() {
   int kasni = 20;
   int rez[5];
@@ -491,7 +489,6 @@ int boja() {
   boja=bR;
   return boja;
 }
-
 
 /*
 void crossing_F() {
