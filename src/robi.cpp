@@ -1,8 +1,13 @@
-#include "NewPing.h"              // UZV senzor
+/*
+  Ako ovo ne radi
+  ja cu se propucat
+  - max
+*/
+#include <NewPing.h>              // UZV senzor
 #include <LiquidCrystal_I2C.h>    // LCD
 #include <Wire.h>                 // I2C komunikacija
-#include "WS2812-SOLDERED.h"      // LED traka
-#include "APDS9960-SOLDERED.h"    // senzor boje
+#include <WS2812-SOLDERED.h>      // LED traka
+#include <APDS9960-SOLDERED.h>    // senzor boje
 #include <Servo.h>                // servo motor
 
 //HC-SR04 - ultrazvučni senzor
@@ -325,57 +330,33 @@ void setup() {
   motor_sd.attach(Servo_sd);
   motor_pl.attach(Servo_pl);
   motor_pd.attach(Servo_pd);
+  reset_display();
 }
 
 
 void loop() {
-  // TEST *************
-  // --- 200 ms == 15 mm
-  reset_display();
+  // Initialize the distance variables.
   int distanceF = sonarF.ping_cm();
   int distanceB = sonarB.ping_cm();
   int distanceL = sonarL.ping_cm();
   int distanceR = sonarR.ping_cm();
   lcd.setCursor(10, 1);
   
-  if (distanceR > minDist) {
+  if (distanceR > minDist) { // If the distance to the right is greater than the minimum distance, turn right.
     lcd.print("R");
     newDir = Right;
-    //move_right();
-  } else if (distanceF > minDist) {
+  } else if (distanceF > minDist) { // If the distance in front is greater than the minimum distance, move forward.
     lcd.print("F");
     newDir = Forward;
-    //move_fw();
-  } else if (distanceL > minDist) {
+  } else if (distanceL > minDist) { // If the distance to the left is greater than the minimum distance, turn left.
     lcd.print("L");
     newDir = Left;
-    //move_left();
-  } else {
+  } else { // If the distance behind is greater than the minimum distance, move backward.
     lcd.print("B");
     newDir = Backward;
-    //move_back();
   }
-
-  reset_display();
-  lcd.print("CD: " + String(currentDir));
-  lcd.setCursor(0, 1);
-  lcd.print("ND: " + String(newDir));
-  Serial.print("Distance Left: " + String(distanceL) + " cm");
-  Serial.println();
-  Serial.print("Distance Right: " + String(distanceR) + " cm");
-  Serial.println();
-  Serial.print("Distance Forward: " + String(distanceF) + " cm");
-  Serial.println();
-  Serial.print("Distance Backward: " + String(distanceB) + " cm");
-  Serial.println();
-  Serial.print("ND: " + String(newDir));
-  Serial.println();
-  Serial.print("OD: " + String(oldDir));
-  Serial.println();
-  Serial.print("CD: " + String(currentDir));
-  Serial.println();
   
-  if (newDir == oldDir) {
+  if (newDir == oldDir) { // If the direction is the same as the previous one, continue moving in that direction.
     currentDir = newDir;
     switch (currentDir) {
       case Right:
@@ -390,22 +371,18 @@ void loop() {
       case Backward:
         move_back();
         break;
-      default:
-        lcd.print("broken");
-        break;
     }
-  } else {
+  } else { // If the direction is different, stop the motors, reset the display, and turn the robot in the new direction.
     oldDir = newDir;
     motor_stop();
     reset_display();
     delay(1500);
-    lcd.print(String(currentDir));
-    switch (currentDir) {
+    switch (currentDir) { 
       case Right:
         move_right(1000);
         break;
       case Forward:
-        move_fw(1250);
+        move_fw(1000);
         break;
       case Left:
         move_left(1000);
@@ -413,16 +390,9 @@ void loop() {
       case Backward:
         move_back(1000);
         break;
-      default:
-      lcd.print("broken");
-        break;
     }
   }
-  
   delay(100);
-  //P1();
-  //if(nprog==0) P1();
-  //if(nprog==1) P2();
 }
 
 void P1() {
@@ -506,8 +476,6 @@ int prati_P1() {
   }
   return d;
 }
-
-
 
 int boja() {
   int r, g, b;
