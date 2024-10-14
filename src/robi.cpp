@@ -1,8 +1,3 @@
-/*
-  Ako ovo ne radi
-  ja cu se propucat
-  - max
-*/
 #include <NewPing.h>              // UZV senzor
 #include <LiquidCrystal_I2C.h>    // LCD
 #include <Wire.h>                 // I2C komunikacija
@@ -47,7 +42,7 @@ int maxN = 180 - maxP;
 // inicijalizacija svega
 LiquidCrystal_I2C lcd(0x27, 2, 16); // Define LCD object
 APDS_9960 apds;
-#define PIN       6     // pin na koji je spojena LED traka
+#define PIN       4     // pin na koji je spojena LED traka
 #define NUMPIXELS 10
 WS2812 pixels(NUMPIXELS, PIN);
 
@@ -285,11 +280,11 @@ void setup() {
   lcd.setCursor(0, 0);
   lcd.print("Initializing...");
   //TCRT5000 inicijalizacija
-  for(int i=0;i<5;i++) {
-      pinMode(linApin[i], INPUT);
-      pinMode(linDpin[i], OUTPUT);
+  for(int i=0; i<5; i++) {
+    pinMode(linApin[i], INPUT);
+    pinMode(linDpin[i], OUTPUT);
   }
-  /*
+  
   //APDS9960 inicijalizacija
   if(!apds.begin()){
     lcd.setCursor(0, 1);
@@ -299,15 +294,12 @@ void setup() {
     lcd.setCursor(0, 1);
     lcd.print("Senzor boje OK!");
   }
-  //apds.enableColor(true);  //enable color sensing mode
-   if (!apds.begin())  //Begin communication with sensor
-    {
-      lcd.setCursor(0,1);
-      lcd.println("Greska APDS-9960."); //Print message if sensor is not available
-      while(1); //Loop forever if there is problem with sensor
-    }
+  if (!apds.begin()) { //Begin communication with sensor
+    lcd.setCursor(0,1);
+    lcd.println("Greska APDS-9960."); //Print message if sensor is not available
+    while(1); //Loop forever if there is problem with sensor
+  }
   delay(1000);
-  */
   // test LED trake
   pixels.begin();
 //  lcd.setCursor(0, 1);
@@ -323,6 +315,7 @@ void setup() {
 //  lcd.setCursor(10, 1);
 //  lcd.print("Plava ");
   plava();
+  pixels.clear();
   // spoji motore
   motor_sl.attach(Servo_sl);
   motor_sd.attach(Servo_sd);
@@ -333,64 +326,57 @@ void setup() {
 
 
 void loop() {
-  // Initialize the distance variables.
-  int distanceF = sonarF.ping_cm();
-  int distanceB = sonarB.ping_cm();
-  int distanceL = sonarL.ping_cm();
-  int distanceR = sonarR.ping_cm();
-  lcd.setCursor(10, 1);
   
-  if (distanceR > minDist) { // If the distance to the right is greater than the minimum distance, turn right.
-    lcd.print("R");
-    newDir = Right;
-  } else if (distanceF > minDist) { // If the distance in front is greater than the minimum distance, move forward.
-    lcd.print("F");
-    newDir = Forward;
-  } else if (distanceL > minDist) { // If the distance to the left is greater than the minimum distance, turn left.
-    lcd.print("L");
-    newDir = Left;
-  } else { // If the distance behind is greater than the minimum distance, move backward.
-    lcd.print("B");
-    newDir = Backward;
+  if (nprog == 0) {
+    prati_P1();
+    nprog = nprog + 1;
+  } else if (nprog == 1) {
+    P1();
+    nprog = nprog + 1;
+  } else if (nprog == 2) {
+    P2();
+    nprog = nprog + 1;
+  } else if (nprog == 3) {
+    P3();
+    nprog = nprog + 1;
+  } else if (nprog == 4) {
+    P4();
   }
-  
-  if (newDir == oldDir) { // If the direction is the same as the previous one, continue moving in that direction.
-    currentDir = newDir;
-    switch (currentDir) {
-      case Right:
-        move_right();
+}
+
+
+int prati_P1() {
+  int d;
+  //**************************
+  start=0;      // testiranje
+  //***************************
+  while(start==1) {             // izađi iz startnog polja
+    move_fw(0);
+    delay(2000);
+    d=pracenje();
+    if(d!=0 && d!=9) start=0;
+  }
+  if(start==0) {
+    d=pracenje();
+    switch(d) {
+      case 0:
+        motor_stop();
         break;
-      case Forward:
-        move_fw();
+      case 6:
+        move_fw(0);           // idi ravno naprijed
         break;
-      case Left:
-        move_left();
+      case 5:                 // okreni malo lijevo
+        rotate_left(200);
         break;
-      case Backward:
-        move_back();
+      case 7:                 // okreni malo desno
+      rotate_right(200);
         break;
-    }
-  } else { // If the direction is different, stop the motors, reset the display, and turn the robot in the new direction.
-    oldDir = newDir;
-    motor_stop();
-    reset_display();
-    delay(1500);
-    switch (currentDir) { 
-      case Right:
-        move_right(1000);
-        break;
-      case Forward:
-        move_fw(1000);
-        break;
-      case Left:
-        move_left(1000);
-        break;
-      case Backward:
-        move_back(1000);
+      default:
+        move_fw(0);           // idi ravno naprijed
         break;
     }
   }
-  delay(100);
+  return d;
 }
 
 void P1() {
@@ -441,56 +427,30 @@ void P2() {
   }
 }
 
-int prati_P1() {
-  int d;
-  //**************************
-  start=0;      // testiranje
-  //***************************
-  while(start==1) {             // izađi iz startnog polja
-    move_fw(0);
-    delay(2000);
-    d=pracenje();
-    if(d!=0 && d!=9) start=0;
-  }
-  if(start==0) {
-    d=pracenje();
-    switch(d) {
-      case 0:
-        motor_stop();
-        break;
-      case 6:
-        move_fw(0);           // idi ravno naprijed
-        break;
-      case 5:                 // okreni malo lijevo
-        rotate_left(200);
-        break;
-      case 7:                 // okreni malo desno
-      rotate_right(200);
-        break;
-      default:
-        move_fw(0);           // idi ravno naprijed
-        break;
-    }
-  }
-  return d;
-}
-
 int boja() {
   int r, g, b;
   int boja;
-  
-  return bG;
 
-  while(!apds.colorAvailable()) {      //wait for color data to be ready
+  /*while(!apds.colorAvailable()) {      //wait for color data to be ready
     delay(5);
-  }
-  apds.readColor(r, g, b);  //get the data
+    Serial.print("boja nije spremna");
+    Serial.println();
+  }*/
+
+  apds.readColor(r, g, b);
+  Serial.print("r = " + String(r));  //get the data
+  Serial.println();
+  Serial.print("g = " + String(g));
+  Serial.println();
+  Serial.print("b =  " + String(b));
+  Serial.println();
+  Serial.print("*************************");
+  Serial.println();
   // odredi boju
-  boja=bR;
   return boja;
 }
 
-/*
+/* 
 void crossing_F() {
   if(sonarR.ping_cm()>granica) {
     move_right(0,0);
