@@ -299,6 +299,7 @@ void setup() {
     lcd.println("Greska APDS-9960."); //Print message if sensor is not available
     while(1); //Loop forever if there is problem with sensor
   }
+  
   delay(1000);
   // test LED trake
   pixels.begin();
@@ -333,14 +334,6 @@ void loop() {
   } else if (nprog == 1) {
     P1();
     nprog = nprog + 1;
-  } else if (nprog == 2) {
-    P2();
-    nprog = nprog + 1;
-  } else if (nprog == 3) {
-    P3();
-    nprog = nprog + 1;
-  } else if (nprog == 4) {
-    P4();
   }
 }
 
