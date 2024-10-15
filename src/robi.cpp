@@ -23,9 +23,9 @@ NewPing sonarL(trigPin[uzvL], echoPin[uzvL], MAX_DISTANCE);
 NewPing sonarR(trigPin[uzvR], echoPin[uzvR], MAX_DISTANCE);
 
 // TCRT5000 senzor linije
-int kal[5] = {200,300,200,200,200};
-const int linApin[] = {A0,A1,A2,A3,A4};   // input
-const int linDpin[] = {41,43,45,47,49};   // output
+int kal[5] = {40, 300, 100, 100, 40};
+const int linApin[] = {A0, A1, A2, A3, A4};   // input
+const int linDpin[] = {41, 43, 45, 47, 49};   // output
 
 // servo motori
 #define Servo_sl 9
@@ -249,7 +249,7 @@ int pracenje() {
   odstup = 0;
   n = 0;
 
-  for(int i=0;i<5;i++) {
+  for(int i = 0; i < 5; i++) {
     if(rez[i] > kal[i]) {
       odstup += 2 * (i+1);
       n++;
@@ -280,7 +280,7 @@ void setup() {
   }
   
   // Initialize color sensors
-  if(!apds.begin()){
+  if(!apds.begin()) {
     lcd.setCursor(0, 1);
     lcd.print("Senzor boje?");
     while(1);
@@ -304,7 +304,8 @@ void setup() {
 
 
 void loop() {
-  return;
+  lcd.print(String(nprog));
+
   if (nprog == 0) {
     prati_P1();
     nprog = nprog + 1;
@@ -319,22 +320,23 @@ void loop() {
 int prati_P1() {
   int d;
   //**************************
-  start=0;      // testiranje
+  start = 1;      // testiranje
   //***************************
-  while(start==1) {             // izađi iz startnog polja
-    move_fw(0);
-    delay(2000);
-    d=pracenje();
+  while (start == 1) {             // izađi iz startnog polja
+    move_fw(1000);
+    d = pracenje();
     if(d!=0 && d!=9) start=0;
   }
-  if(start==0) {
+
+  if (start==0) {
     d=pracenje();
+    lcd.print(d);
     switch(d) {
       case 0:
         motor_stop();
         break;
       case 6:
-        move_fw(0);           // idi ravno naprijed
+        move_fw(1000);           // idi ravno naprijed
         break;
       case 5:                 // okreni malo lijevo
         rotate_left(200);
