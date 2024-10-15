@@ -23,7 +23,7 @@ NewPing sonarL(trigPin[uzvL], echoPin[uzvL], MAX_DISTANCE);
 NewPing sonarR(trigPin[uzvR], echoPin[uzvR], MAX_DISTANCE);
 
 // TCRT5000 senzor linije
-int kal[5] = {40, 300, 45, 45, 40};
+int kal[5] = {40, 300, 50, 45, 45};
 const int linApin[] = {A0, A1, A2, A3, A4};   // input
 const int linDpin[] = {41, 43, 45, 47, 49};   // output
 
