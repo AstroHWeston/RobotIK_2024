@@ -245,25 +245,18 @@ int pracenje() {
     delay(kasni);
     rez[i] = analogRead(linApin[i]);  
   }
+
   odstup = 0;
   n = 0;
+
   for(int i=0;i<5;i++) {
     if(rez[i] > kal[i]) {
       odstup += 2 * (i+1);
       n++;
     }
   }
-/*  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print(rez[0]);
-  lcd.setCursor(5,0);
-  lcd.print(rez[2]);
-  lcd.setCursor(10,0);
-  lcd.print(rez[4]);
-  lcd.setCursor(2,1);
-  lcd.print(rez[1]);
-  lcd.setCursor(7,1);
-  lcd.print(rez[3]); */
+
+
   if(n==0) odstup=0;                  // odstup==0 - nema linije, sve je bijelo
   else if(n==30) odstup=9;            // 9 - raskršće L i D
   else if(n==24) odstup=1;            // 1 - invertirano područje 
@@ -272,6 +265,7 @@ int pracenje() {
   lcd.print(odstup);
   return odstup;
 }
+
 //***************************************************
 void setup() {
   lcd.init();
@@ -279,45 +273,28 @@ void setup() {
   Serial.begin(9600);
   lcd.setCursor(0, 0);
   lcd.print("Initializing...");
-  //TCRT5000 inicijalizacija
+  // Initialize line follower sensors
   for(int i=0; i<5; i++) {
     pinMode(linApin[i], INPUT);
     pinMode(linDpin[i], OUTPUT);
   }
   
-  //APDS9960 inicijalizacija
+  // Initialize color sensors
   if(!apds.begin()){
     lcd.setCursor(0, 1);
     lcd.print("Senzor boje?");
+    while(1);
   }
   else {
     lcd.setCursor(0, 1);
     lcd.print("Senzor boje OK!");
   }
-  if (!apds.begin()) { //Begin communication with sensor
-    lcd.setCursor(0,1);
-    lcd.println("Greska APDS-9960."); //Print message if sensor is not available
-    while(1); //Loop forever if there is problem with sensor
-  }
   
+  pixels.begin();
   delay(1000);
   // test LED trake
-  pixels.begin();
-//  lcd.setCursor(0, 1);
-//  lcd.print("                ");
-//  lcd.print("LED traka");
-  pixels.clear();
-//  lcd.setCursor(10, 1);
-//  lcd.print("Crvena");
-  crvena();
-//  lcd.setCursor(10, 1);
-//  lcd.print("Zelena");
-  zelena();
-//  lcd.setCursor(10, 1);
-//  lcd.print("Plava ");
-  plava();
-  pixels.clear();
-  // spoji motore
+  
+  // Attach servo motors
   motor_sl.attach(Servo_sl);
   motor_sd.attach(Servo_sd);
   motor_pl.attach(Servo_pl);
@@ -327,7 +304,7 @@ void setup() {
 
 
 void loop() {
-  
+  return;
   if (nprog == 0) {
     prati_P1();
     nprog = nprog + 1;
@@ -335,6 +312,7 @@ void loop() {
     P1();
     nprog = nprog + 1;
   }
+
 }
 
 
