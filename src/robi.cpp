@@ -235,16 +235,19 @@ void okret_180() {
 }
 //***************************************************
 int pracenje() {
-  int kasni = 50;
+  int kasni = 200;
   int rez[5];
   int odstup;
   int n;
   
   for(int i = 0; i < 5; i++) {
     digitalWrite(linDpin[i], HIGH);
-    delay(kasni);
+  }
+  delay(kasni);
+  for(int i = 0; i < 5; i++) {
     //rez[i] = analogRead(linApin[i]);
     rez[i] = analogRead(linApin[i]) > kal[i] ? 1 : 0;
+    digitalWrite(linDpin[i], LOW);
   }
   lcd.clear();
   lcd.setCursor(0,0);
