@@ -5,7 +5,7 @@
 //inicijalizacija
 LiquidCrystal_I2C lcd(0x27, 2, 16); // Define LCD object
 
-int kal[5] = {400,400,400,400,400};
+int kal[5] = {40, 300, 100, 100, 40};
 const int linApin[] = {A0,A1,A2,A3,A4};   // input
 const int linDpin[] = {41,43,45,47,49};   // output
 
