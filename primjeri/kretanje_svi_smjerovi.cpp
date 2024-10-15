@@ -18,70 +18,58 @@ void motor_stop() {
   motor_sd.write(90);
 }
 
-void move_fw(int time) { // Kretanje naprijed
+void move_fw() { // Kretanje naprijed
   for (int i = 90; i >= 0; i--) {
     motor_pd.write(i);
     motor_pl.write(180 - i);
     motor_sl.write(i);
     motor_sd.write(180 - i);
   }
-  delay(time * 1000);
-  motor_stop();
 }
 
-void move_back(int time) { // Kretanje natrag
+void move_back() { // Kretanje natrag
   for (int i = 90; i >= 0; i--) {
     motor_pd.write(180 - i);
     motor_pl.write(i);
     motor_sl.write(180 - i);
     motor_sd.write(i);
   }
-  delay(time * 1000);
-  motor_stop();
 }
 
-void move_right(int time) { // Kretanje desno
+void move_right() { // Kretanje desno
   for (int i = 90; i >= 0; i--) {
     motor_pd.write(i);
     motor_pl.write(180 - i);
     motor_sl.write(180 - i);
     motor_sd.write(i);
   }
-  delay(time * 1000);
-  motor_stop();
 }
 
-void move_left(int time) { // Kretanje lijevo
+void move_left() { // Kretanje lijevo
   for (int i = 90; i >= 0; i--) {
     motor_pd.write(180 - i);
     motor_pl.write(i);
     motor_sl.write(i);
     motor_sd.write(180 - i);
   }
-  delay(time * 1000);
-  motor_stop();
 }
 
-void rotate_right(int time) { // Rotacija desno 
+void rotate_right() { // Rotacija desno 
   for (int i = 90; i >= 0; i--) {
     motor_pd.write(90);
     motor_pl.write(180 - i);
     motor_sl.write(180 - i);
     motor_sd.write(90);
   }
-  delay(time * 1000);
-  motor_stop();
 }
 
-void rotate_left(int time) { // Rotacija lijevo 
+void rotate_left() { // Rotacija lijevo 
   for (int i = 90; i >= 0; i--) {
     motor_pd.write(i);
     motor_pl.write(90);
     motor_sl.write(90);
     motor_sd.write(i);
   }
-  delay(time * 1000);
-  motor_stop();
 }
 
 void setup() {
@@ -93,11 +81,17 @@ void setup() {
 }
 
 void loop() {
-  move_fw(3);
-  move_back(3);
-  move_left(3);
-  move_right(3);
-  rotate_right(3);
-  rotate_left(3);
   return;
+  move_fw();
+  delay(3000);
+  move_back();
+  delay(3000);
+  move_left();
+  delay(3000);
+  move_right();
+  delay(3000);
+  rotate_right();
+  delay(3000);
+  rotate_left();
+  delay(3000);
 }
