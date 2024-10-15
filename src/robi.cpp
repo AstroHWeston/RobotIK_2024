@@ -23,7 +23,7 @@ NewPing sonarL(trigPin[uzvL], echoPin[uzvL], MAX_DISTANCE);
 NewPing sonarR(trigPin[uzvR], echoPin[uzvR], MAX_DISTANCE);
 
 // TCRT5000 senzor linije
-int kal[5] = {40, 300, 100, 100, 40};
+int kal[5] = {40, 300, 45, 45, 40};
 const int linApin[] = {A0, A1, A2, A3, A4};   // input
 const int linDpin[] = {41, 43, 45, 47, 49};   // output
 
@@ -211,7 +211,7 @@ void rotate_left(int d = 0) { // Rotacija lijevo
 }
 //***************************************************
 void okret_90() {
-  for (int i = 90; i >= maxN; i--) {
+  for (int i = 90; i >= 0; i--) {
     motor_pd.write(180 - i);
     motor_pl.write(180 - i);
     motor_sl.write(180 - i);
@@ -224,7 +224,7 @@ void okret_90() {
 void okret_180() {
   reset_display();
   lcd.print("OKRET!");
-  for (int i = 90; i <= maxP; i++) { //prije maxp je bilo 180
+  for (int i = 90; i <= 180; i++) { //prije maxp je bilo 180
     motor_pd.write(i);
     motor_pl.write(i);
     motor_sl.write(i);
@@ -235,34 +235,47 @@ void okret_180() {
 }
 //***************************************************
 int pracenje() {
-  int kasni = 20;
+  int kasni = 50;
   int rez[5];
   int odstup;
   int n;
   
-  for(int i=0;i<5;i++) {
+  for(int i = 0; i < 5; i++) {
     digitalWrite(linDpin[i], HIGH);
     delay(kasni);
-    rez[i] = analogRead(linApin[i]);  
+    //rez[i] = analogRead(linApin[i]);
+    rez[i] = analogRead(linApin[i]) > kal[i] ? 1 : 0;
   }
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(rez[0]);
+  lcd.setCursor(6,0);
+  lcd.print(rez[2]);
+  lcd.setCursor(12,0);
+  lcd.print(rez[4]);
+  lcd.setCursor(3,1);
+  lcd.print(rez[1]);
+  lcd.setCursor(9,1);
+  lcd.print(rez[3]);
+  delay(100);
 
   odstup = 0;
   n = 0;
 
   for(int i = 0; i < 5; i++) {
-    if(rez[i] > kal[i]) {
+    if(rez[i] > 0) {
       odstup += 2 * (i+1);
       n++;
     }
   }
 
-
-  if(n==0) odstup=0;                  // odstup==0 - nema linije, sve je bijelo
-  else if(n==30) odstup=9;            // 9 - raskršće L i D
-  else if(n==24) odstup=1;            // 1 - invertirano područje 
-  else if (n>0) odstup = odstup/n;    // 4 - ras L, 5 - D, 6 - sredina, 7 - L, 8 - ras D 
-  lcd.setCursor(12,1);
-  lcd.print(odstup);
+  if(n == 0) odstup = 0;                  // odstup==0 - nema linije, sve je bijelo
+  else if(odstup == 30) odstup = 9;            // 9 - raskršće L i D
+  else if(odstup == 24) odstup = 1;            // 1 - invertirano područje 
+  else if (n > 0) odstup = odstup / n;    // 4 - ras L, 5 - D, 6 - sredina, 7 - L, 8 - ras D 
+  //reset_display();
+  //lcd.setCursor(12, 1);
+  //lcd.print(odstup);
   return odstup;
 }
 
@@ -274,7 +287,7 @@ void setup() {
   lcd.setCursor(0, 0);
   lcd.print("Initializing...");
   // Initialize line follower sensors
-  for(int i=0; i<5; i++) {
+  for(int i = 0; i < 5; i++) {
     pinMode(linApin[i], INPUT);
     pinMode(linDpin[i], OUTPUT);
   }
@@ -284,8 +297,7 @@ void setup() {
     lcd.setCursor(0, 1);
     lcd.print("Senzor boje?");
     while(1);
-  }
-  else {
+  } else {
     lcd.setCursor(0, 1);
     lcd.print("Senzor boje OK!");
   }
@@ -304,23 +316,23 @@ void setup() {
 
 
 void loop() {
-  lcd.print(String(nprog));
 
-  if (nprog == 0) {
-    prati_P1();
-    nprog = nprog + 1;
-  } else if (nprog == 1) {
+  //if (nprog == 0) {
     P1();
-    nprog = nprog + 1;
-  }
-
+    //nprog = nprog + 1;
+  //} else if (nprog == 1) {
+  //  return;
+    //P2();
+  //  nprog = nprog + 1;
+  //}
+  delay(200);
 }
 
 
 int prati_P1() {
   int d;
   //**************************
-  start = 1;      // testiranje
+  start = 0;      // testiranje
   //***************************
   while (start == 1) {             // izađi iz startnog polja
     move_fw(1000);
@@ -329,23 +341,24 @@ int prati_P1() {
   }
 
   if (start==0) {
-    d=pracenje();
+    d = pracenje();
+    //reset_display();
     lcd.print(d);
     switch(d) {
       case 0:
-        motor_stop();
+        //motor_stop();
         break;
-      case 6:
-        move_fw(1000);           // idi ravno naprijed
+      case 6:                 // idi ravno naprijed
+        //move_fw();           
         break;
       case 5:                 // okreni malo lijevo
-        rotate_left(200);
+        //rotate_left(200);
         break;
       case 7:                 // okreni malo desno
-      rotate_right(200);
+        //rotate_right(200);
         break;
-      default:
-        move_fw(0);           // idi ravno naprijed
+      default:                // idi ravno naprijed
+        // move_back();
         break;
     }
   }
@@ -356,17 +369,18 @@ void P1() {
   int X;
   int bojica;
   
-  X=prati_P1();
-  bojica=boja();
-  if(boja()>0) {
-    if(bojica==bR) crvena();
-    if(bojica==bG) zelena();
-    if(bojica==bB) plava();
-    if(bojica==bY) zuta();
+  X = prati_P1();
+  bojica = boja();
+  if(boja() > 0) {
+    if(bojica == bR) crvena();
+    if(bojica == bG) zelena();
+    if(bojica == bB) plava();
+    if(bojica == bY) zuta();
     delay(1000);
     pixels.clear();
   }
-  if(X==0) {
+
+  if(X == 0) {
     motor_stop();
     delay(500);
     okret_180();

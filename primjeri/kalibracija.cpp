@@ -5,7 +5,7 @@
 //inicijalizacija
 LiquidCrystal_I2C lcd(0x27, 2, 16); // Define LCD object
 
-int kal[5] = {40, 300, 100, 100, 40};
+int kal[5] = {40, 300, 45, 45, 40};
 const int linApin[] = {A0,A1,A2,A3,A4};   // input
 const int linDpin[] = {41,43,45,47,49};   // output
 
@@ -13,7 +13,7 @@ void setup() {
   lcd.init();
   lcd.backlight();
   lcd.setCursor(0, 0);
-  Serial.begin(115200);
+  Serial.begin(9600);
     //TCRT5000 inicijalizacija
   for(int i=0;i<5;i++) {
       pinMode(linApin[i], INPUT);
@@ -31,9 +31,13 @@ void loop() {
   for(int i=0;i<5;i++) {
       digitalWrite(linDpin[i], HIGH);
       delay(kasni);
-      rez[i] = analogRead(linApin[i]);
+      rez[i] = analogRead(linApin[i]) > kal[i] ? 1 : 0;
       digitalWrite(linDpin[i], LOW);
+      Serial.print(analogRead(linApin[i]));
+      Serial.print(" - ");
   }
+
+  Serial.println();
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print(rez[0]);
