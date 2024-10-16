@@ -186,6 +186,7 @@ void move_left(int d = 0) { // Kretanje lijevo
     motor_stop();
   }
 }
+
 //***************************************************
 void rotate_right(int d = 0) { // Rotacija desno
   for (int i = 90; i >= maxN; i--) {
