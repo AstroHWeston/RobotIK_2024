@@ -330,8 +330,6 @@ void setup() {
 
 
 void loop() {
-  move_fw(3000);
-  delay(5000);
   //if (nprog == 0) {
     P1();
     //nprog = nprog + 1;
