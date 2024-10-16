@@ -20,8 +20,9 @@ int maxN = 180 - maxP;
 NewPing sonarF(31, 30, 400);
 
 Adafruit_APDS9960 apds;
-
-WS2812 pixels(4, 10);
+#define PIN 4
+#define NUMPIXELS 10
+WS2812 pixels(PIN, NUMPIXELS);
 
 // Definicija distanca
 int minDist = 20;
@@ -61,7 +62,7 @@ void move_fw(int d = 0) { // Kretanje naprijed
 //***************************************************
 // LED traka - boje
 void crvena() {
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < NUMPIXELS; i++) {
     pixels.setPixelColor(i, pixels.Color(150, 0, 0));
     pixels.show();
     delay(20);
@@ -69,7 +70,7 @@ void crvena() {
 }
 //***************************************************
 void zelena() {
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < NUMPIXELS; i++) {
     pixels.setPixelColor(i, pixels.Color(0, 150, 0));
     pixels.show();
     delay(20);
@@ -77,7 +78,7 @@ void zelena() {
 }
 //***************************************************
 void zuta() {
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < NUMPIXELS; i++) {
     pixels.setPixelColor(i, pixels.Color(150, 150, 0));
     pixels.show();
     delay(20);
@@ -85,7 +86,7 @@ void zuta() {
 }
 //***************************************************
 void plava() {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < NUMPIXELS; i++) {
     pixels.setPixelColor(i, pixels.Color(0, 0, 150));
     pixels.show();
     delay(20);
@@ -103,12 +104,15 @@ void setup() {
 
   pixels.begin();
   delay(1000);
-  pixels.clear();
   motor_sl.attach(Servo_sl);
   motor_sd.attach(Servo_sd);
   motor_pl.attach(Servo_pl);
   motor_pd.attach(Servo_pd);
   delay(1000);
+  crvena();
+  plava();
+  zelena();
+  zuta();
 }
 
 void loop() {
