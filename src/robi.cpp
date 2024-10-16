@@ -6,6 +6,7 @@
 #include <Servo.h>                // servo motor
 
 //HC-SR04 - ultrazvučni senzor
+#define MAX_DISTANCE 400
 const int uzvF = 0;
 const int uzvB = 1;
 const int uzvL = 2;
@@ -13,10 +14,6 @@ const int uzvR = 3;
 const int trigPin[] = {31, 33, 35, 37};  
 const int echoPin[] = {30, 32, 34, 36};
 
-// Maximum distance we want to ping for (in centimeters).
-#define MAX_DISTANCE 400  
-
-// NewPing setup of pins and maximum distance.
 NewPing sonarF(trigPin[uzvF], echoPin[uzvF], MAX_DISTANCE);
 NewPing sonarB(trigPin[uzvB], echoPin[uzvB], MAX_DISTANCE);
 NewPing sonarL(trigPin[uzvL], echoPin[uzvL], MAX_DISTANCE);
@@ -39,21 +36,26 @@ Servo motor_pd;
 int maxP = 120;
 int maxN = 180 - maxP;
 
-// inicijalizacija svega
-LiquidCrystal_I2C lcd(0x27, 2, 16); // Define LCD object
+// Inicijalizacija LCD-a
+LiquidCrystal_I2C lcd(0x27, 2, 16);
+
+// Inicijalizacija senzora boje
 APDS_9960 apds;
-#define PIN       4     // pin na koji je spojena LED traka
+
+// Inicijalizacija LED trake
+#define PIN 4
 #define NUMPIXELS 10
 WS2812 pixels(NUMPIXELS, PIN);
 
-#define GRANICA   15;     // duljina kod koje ragira na prepreku
-int nprog = 0;            // brojilo programa
-int start = 1;            // početak programa
-// boje ********************
-const int bR=1;
-const int bG=2;
-const int bB=3;
-const int bY=4;
+#define GRANICA 15;
+int nprog = 0;
+int start = 1;
+
+// Boje ********************
+const int bR = 1;
+const int bG = 2;
+const int bB = 3;
+const int bY = 4;
 // deklaracija funkcija ****
 void P1(void);
 void P2(void);
@@ -66,7 +68,6 @@ int prati_P3(void);
 int prati_P4(void);
 int boja(void);
 void okret_180();
-//**************************
 
 //***************************************************
 // LED traka - boje
@@ -230,25 +231,27 @@ void okret_180() {
     motor_sl.write(i);
     motor_sd.write(i);
   }
-  delay(3100);
+  delay(3300);
   motor_stop();
 }
 //***************************************************
 int pracenje() {
   int kasni = 200;
   int rez[5];
-  int odstup;
-  int n;
+  int odstup = 0;
+  int n = 0;
   
   for(int i = 0; i < 5; i++) {
     digitalWrite(linDpin[i], HIGH);
   }
   delay(kasni);
+
   for(int i = 0; i < 5; i++) {
-    //rez[i] = analogRead(linApin[i]);
-    rez[i] = analogRead(linApin[i]) > kal[i] ? 1 : 0;
+    rez[i] = analogRead(linApin[i]);
+    //rez[i] = analogRead(linApin[i]) > kal[i] ? 1 : 0;
     digitalWrite(linDpin[i], LOW);
   }
+
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print(rez[0]);
@@ -262,9 +265,6 @@ int pracenje() {
   lcd.print(rez[3]);
   delay(100);
 
-  odstup = 0;
-  n = 0;
-
   for(int i = 0; i < 5; i++) {
     if(rez[i] > 0) {
       odstup += 2 * (i+1);
@@ -272,21 +272,17 @@ int pracenje() {
     }
   }
 
-  if(n == 0) odstup = 0;                  // odstup==0 - nema linije, sve je bijelo
-  else if(odstup == 30) odstup = 9;            // 9 - raskršće L i D
-  else if(odstup == 24) odstup = 1;            // 1 - invertirano područje 
-  else if (n > 0) odstup = odstup / n;    // 4 - ras L, 5 - D, 6 - sredina, 7 - L, 8 - ras D 
-  //reset_display();
-  //lcd.setCursor(12, 1);
-  //lcd.print(odstup);
+  if(n == 0) odstup = 0;                        // odstup==0 - nema linije, sve je bijelo
+  else if(odstup == 30) odstup = 9;             // 9 - raskršće L i D
+  else if(odstup == 24) odstup = 1;             // 1 - invertirano područje 
+  else if (n > 0) odstup = odstup / n;          // 4 - ras L, 5 - D, 6 - sredina, 7 - L, 8 - ras D 
   return odstup;
 }
-
 //***************************************************
 void setup() {
+  Serial.begin(9600);
   lcd.init();
   lcd.backlight();
-  Serial.begin(9600);
   lcd.setCursor(0, 0);
   lcd.print("Initializing...");
   // Initialize line follower sensors
@@ -307,7 +303,7 @@ void setup() {
   
   pixels.begin();
   delay(1000);
-  // test LED trake
+  pixels.clear();
   
   // Attach servo motors
   motor_sl.attach(Servo_sl);
@@ -340,10 +336,10 @@ int prati_P1() {
   while (start == 1) {             // izađi iz startnog polja
     move_fw(1000);
     d = pracenje();
-    if(d!=0 && d!=9) start=0;
+    if(d != 0 && d != 9) start = 0;
   }
 
-  if (start==0) {
+  if (start == 0) {
     d = pracenje();
     //reset_display();
     lcd.print(d);
@@ -390,7 +386,7 @@ void P1() {
     reset_display();
     lcd.print("STAO SAM");
     for(;;);
-    nprog=1;
+    nprog = 1;
   }
 }
 
