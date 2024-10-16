@@ -2,6 +2,7 @@
 #include <SPI.h>
 #include <Servo.h>
 #include <Adafruit_APDS9960.h>
+#include <NewPing.h>
 
 #define Servo_sl 9
 #define Servo_sd 10
@@ -15,6 +16,8 @@ Servo motor_pd;
 
 int maxP = 120;
 int maxN = 180 - maxP;
+
+NewPing sonarF(31, 30, 400);
 
 // Definicija distanca
 int minDist = 20;
@@ -53,8 +56,19 @@ void move_fw(int d = 0) { // Kretanje naprijed
 
 void setup() {
   Serial.begin(9600);
+  motor_sl.attach(Servo_sl);
+  motor_sd.attach(Servo_sd);
+  motor_pl.attach(Servo_pl);
+  motor_pd.attach(Servo_pd);
+  delay(1000);
 }
 
 void loop() {
-  Serial.print("Heyooo!!");
+  int distanceF = sonarF.ping_cm();
+  while (distanceF > 13) {
+    move_fw();
+    distanceF = sonarF.ping_cm();
+  }
+  motor_stop();
+
 }
