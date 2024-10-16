@@ -301,9 +301,22 @@ void setup() {
     lcd.print("Senzor boje OK!");
   }
   
-  pixels.begin();
   delay(1000);
+  // test LED trake
+  pixels.begin();
+//  lcd.setCursor(0, 1);
+//  lcd.print("                ");
+//  lcd.print("LED traka");
   pixels.clear();
+//  lcd.setCursor(10, 1);
+//  lcd.print("Crvena");
+  crvena();
+//  lcd.setCursor(10, 1);
+//  lcd.print("Zelena");
+  zelena();
+//  lcd.setCursor(10, 1);
+//  lcd.print("Plava ");
+  plava();
   
   // Attach servo motors
   motor_sl.attach(Servo_sl);
