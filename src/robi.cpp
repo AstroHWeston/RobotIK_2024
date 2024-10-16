@@ -272,7 +272,7 @@ int pracenje() {
     }
   }
 
-  if(n == 0) odstup = 0;                        // odstup==0 - nema linije, sve je bijelo
+  if(n == 0) odstup = 0;                        // odstup == 0 - nema linije, sve je bijelo
   else if(odstup == 30) odstup = 9;             // 9 - raskršće L i D
   else if(odstup == 24) odstup = 1;             // 1 - invertirano područje 
   else if (n > 0) odstup = odstup / n;          // 4 - ras L, 5 - D, 6 - sredina, 7 - L, 8 - ras D 
