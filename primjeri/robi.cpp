@@ -4,6 +4,8 @@
 #include <WS2812-SOLDERED.h>      // LED traka
 #include <APDS9960-SOLDERED.h>    // senzor boje
 #include <Servo.h>                // servo motor
+#include <SPI.h>
+
 
 //HC-SR04 - ultrazvučni senzor
 #define MAX_DISTANCE 400
@@ -251,7 +253,7 @@ int pracenje() {
     //rez[i] = analogRead(linApin[i]) > kal[i] ? 1 : 0;
     digitalWrite(linDpin[i], LOW);
   }
-
+/*
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print(rez[0]);
@@ -263,7 +265,7 @@ int pracenje() {
   lcd.print(rez[1]);
   lcd.setCursor(9,1);
   lcd.print(rez[3]);
-  delay(100);
+  delay(100);*/
 
   for(int i = 0; i < 5; i++) {
     if(rez[i] > 0) {
@@ -324,6 +326,7 @@ void setup() {
   motor_pl.attach(Servo_pl);
   motor_pd.attach(Servo_pd);
   reset_display();
+  pixels.clear();
 }
 
 
@@ -370,7 +373,7 @@ int prati_P1() {
         //rotate_right(200);
         break;
       default:                // idi ravno naprijed
-        // move_back();
+         //move_back();
         break;
     }
   }

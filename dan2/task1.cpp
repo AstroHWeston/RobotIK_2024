@@ -128,15 +128,14 @@ void loop() {
   apds.getColorData(&r, &g, &b, &c);
 
   //Serial.print("R: "); Serial.print(r); Serial.print(" G: "); Serial.print(g); Serial.print(" B: "); Serial.print(b); Serial.print(" C: "); Serial.println(c);
-
-  if (r > g && r > b) {
-    Serial.print("Color is red!");
-    Serial.println();
-    crvena();
-  } else if (r > b && g > b && c > 25) {
+  if (r > b && g > b && c > 25) {
     Serial.print("Color is yellow!");
     Serial.println();
     zuta();
+  } else if (r > g && r > b) {
+    Serial.print("Color is red!");
+    Serial.println();
+    crvena();
   } else if (g > r && g > b) {
     Serial.print("Color is green!");
     Serial.println();
