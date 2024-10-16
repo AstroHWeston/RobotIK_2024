@@ -110,7 +110,7 @@ void reset_display() {
   lcd.setCursor(0, 0);
 }
 //***************************************************
-// Definicija smjerova
+// Definicija distanca
 int minDist = 20;
 enum Direction {
   Forward,      // 0
@@ -249,8 +249,8 @@ int pracenje() {
   delay(kasni);
 
   for(int i = 0; i < 5; i++) {
-    //rez[i] = analogRead(linApin[i]);
-    rez[i] = analogRead(linApin[i]) > kal[i] ? 1 : 0;
+    rez[i] = analogRead(linApin[i]);
+    //rez[i] = analogRead(linApin[i]) > kal[i] ? 1 : 0;
     digitalWrite(linDpin[i], LOW);
   }
 /*
@@ -268,7 +268,7 @@ int pracenje() {
   delay(100);*/
 
   for(int i = 0; i < 5; i++) {
-    if(rez[i] != 0) {
+    if(rez[i] > 0) {
       odstup += 2 * (i+1);
       n++;
     }
@@ -302,23 +302,14 @@ void setup() {
     lcd.setCursor(0, 1);
     lcd.print("Senzor boje OK!");
   }
-  
   delay(1000);
-  // test LED trake
+
   pixels.begin();
-//  lcd.setCursor(0, 1);
-//  lcd.print("                ");
-//  lcd.print("LED traka");
   pixels.clear();
-//  lcd.setCursor(10, 1);
-//  lcd.print("Crvena");
   crvena();
-//  lcd.setCursor(10, 1);
-//  lcd.print("Zelena");
   zelena();
-//  lcd.setCursor(10, 1);
-//  lcd.print("Plava ");
   plava();
+
   // Attach servo motors
   motor_sl.attach(Servo_sl);
   motor_sd.attach(Servo_sd);
@@ -328,10 +319,8 @@ void setup() {
   pixels.clear();
 }
 
-
 void loop() {
-  move_fw(3000);
-  delay(5000);
+
   //if (nprog == 0) {
     P1();
     //nprog = nprog + 1;
@@ -346,9 +335,8 @@ void loop() {
 
 int prati_P1() {
   int d;
-  //**************************
-  start = 0;      // testiranje
-  //***************************
+  start = 0;
+  
   while (start == 1) {             // izađi iz startnog polja
     move_fw(1000);
     d = pracenje();
@@ -381,10 +369,10 @@ int prati_P1() {
 }
 
 void P1() {
-  int X;
+  int x;
   int bojica;
   
-  X = prati_P1();
+  x = prati_P1();
   bojica = boja();
   if(boja() > 0) {
     if(bojica == bR) crvena();
@@ -395,7 +383,11 @@ void P1() {
     pixels.clear();
   }
 
-  if(X == 0) {
+  switch (x) {
+    case 0:
+
+  }
+  if(x == 0) {
     motor_stop();
     delay(500);
     okret_180();

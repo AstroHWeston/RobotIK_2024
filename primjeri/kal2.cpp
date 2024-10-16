@@ -6,7 +6,7 @@
 //inicijalizacija
 LiquidCrystal_I2C lcd(0x27, 2, 16); // Define LCD object
 
-int kal[5] = {500, 800, 500, 500, 300};
+int kal[5] = {40, 300, 50, 45, 45};
 const int linApin[] = {A0,A1,A2,A3,A4};   // input
 const int linDpin[] = {41,43,45,47,49};   // output
 
@@ -29,13 +29,15 @@ void loop() {
   int odstupanje;
   int n;
 
-  for(int i=0;i<5;i++) {
-      digitalWrite(linDpin[i], HIGH);
-      delay(kasni);
-      rez[i] = analogRead(linApin[i]) > kal[i] ? 1 : 0;
-      digitalWrite(linDpin[i], LOW);
-      Serial.print(analogRead(linApin[i]));
-      Serial.print(" - ");
+  for(int i = 0; i < 5; i++) {
+    digitalWrite(linDpin[i], HIGH);
+  }
+  delay(kasni);
+
+  for(int i = 0; i < 5; i++) {
+    rez[i] = analogRead(linApin[i]);
+    //rez[i] = analogRead(linApin[i]) > kal[i] ? 1 : 0;
+    digitalWrite(linDpin[i], LOW);
   }
 
   Serial.println();
