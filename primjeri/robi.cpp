@@ -11,7 +11,7 @@ const int uzvF = 0;
 const int uzvB = 1;
 const int uzvL = 2;
 const int uzvR = 3;
-const int trigPin[] = {31, 33, 35, 37};  
+const int trigPin[] = {31, 33, 35, 37};
 const int echoPin[] = {30, 32, 34, 36};
 
 NewPing sonarF(trigPin[uzvF], echoPin[uzvF], MAX_DISTANCE);
