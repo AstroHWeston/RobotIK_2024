@@ -22,7 +22,7 @@ NewPing sonarF(31, 30, 400);
 Adafruit_APDS9960 apds;
 #define PIN 4
 #define NUMPIXELS 10
-WS2812 pixels(PIN, NUMPIXELS);
+WS2812 pixels(NUMPIXELS, PIN);
 
 // Definicija distanca
 int minDist = 20;
@@ -109,20 +109,16 @@ void setup() {
   motor_pl.attach(Servo_pl);
   motor_pd.attach(Servo_pd);
   delay(1000);
-  crvena();
-  plava();
-  zelena();
-  zuta();
 }
 
 void loop() {
-  /*int distanceF = sonarF.ping_cm();
+  int distanceF = sonarF.ping_cm();
   while (distanceF > 13) {
     move_fw();
     distanceF = sonarF.ping_cm();
   }
 
-  motor_stop();*/
+  motor_stop();
 
   while (!apds.colorDataReady()) {
     delay(20);
