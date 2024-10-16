@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <SPI.h>
 #include <Servo.h>
 #include <Adafruit_APDS9960.h>
 
@@ -50,3 +51,10 @@ void move_fw(int d = 0) { // Kretanje naprijed
   }
 }
 
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  Serial.print("Heyooo!!");
+}
