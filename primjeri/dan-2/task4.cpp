@@ -1,112 +1,94 @@
-// Include NewPing Library
-#include "NewPing.h"
+#include <Arduino.h>
 #include <Servo.h>
-#include <SPI.h>
-
-// Hook up HC-SR04 with Trig to Arduino Pin 9, Echo to Arduino pin 10
-//#define TRIGGER_PIN 9
-//#define ECHO_PIN 10
-
-// Maximum distance we want to ping for (in centimeters).
-#define MAX_DISTANCE 400  
-int L;
-int R;
-
-// NewPing setup of pins and maximum distance.
-NewPing sonarL(35, 34, MAX_DISTANCE);
-NewPing sonarR(37, 36, MAX_DISTANCE);
-
-#define Servo_sl 9
-#define Servo_sd 10
-#define Servo_pl 11
-#define Servo_pd 12
-
-Servo motor_sl;
-Servo motor_sd;
-Servo motor_pl;
-Servo motor_pd;
-
-void motor_stop() {
-  motor_pd.write(90);
-  motor_pl.write(90);
-  motor_sl.write(90);
-  motor_sd.write(90);
-}
-//***************************************************
-
-void move_fw(int d = 0) { // Kretanje naprijed
-  for (int i = 90; i >= 180; i--) {
-    motor_pd.write(i);
-    motor_pl.write(180 - i);
-    motor_sl.write(180 - i);
-    motor_sd.write(i);
-  }
-  if(d > 0) {
-    delay(d);
-    motor_stop();
-  }
-}
-//***************************************************
-void move_back(int d = 0) { // Kretanje natrag
-  for (int i = 90; i >= 180; i--) {
-    motor_pd.write(180 - i);
-    motor_pl.write(i);
-    motor_sl.write(i);
-    motor_sd.write(180 - i);
-  }
-  if(d > 0) {
-    delay(d);
-    motor_stop();
-  }
-}
-//***************************************************
-void move_right(int d = 0) { // Kretanje desno
-  for (int i = 90; i >= 180; i--) {
-    motor_pd.write(180 - i);
-    motor_pl.write(180 - i);
-    motor_sl.write(i);
-    motor_sd.write(i);
-  }
-  if(d > 0) {
-    delay(d);
-    motor_stop();
-  }
-}
-//***************************************************
-void move_left(int d = 0) { // Kretanje lijevo
-  for (int i = 90; i >= 180; i--) {
-    motor_pd.write(i);
-    motor_pl.write(i);
-    motor_sl.write(180 - i);
-    motor_sd.write(180 - i);
-  }
-  if(d > 0) {
-    delay(d);
-    motor_stop();
-  }
-}
-
+ 
+#define Servo_FL 11
+#define Servo_FR 12
+#define Servo_BL 9
+#define Servo_BR 10
+ 
+#define Trig_Left 35
+#define Echo_Left 34
+#define Trig_Right 37
+#define Echo_Right 36
+ 
+Servo servoFL, servoFR, servoBL, servoBR;
+ 
 void setup() {
   Serial.begin(9600);
-  motor_sl.attach(Servo_sl);
-  motor_sd.attach(Servo_sd);
-  motor_pl.attach(Servo_pl);
-  motor_pd.attach(Servo_pd);
+  servoFL.attach(Servo_FL);
+  servoFR.attach(Servo_FR);
+  servoBL.attach(Servo_BL);
+  servoBR.attach(Servo_BR);
+  pinMode(Trig_Left, OUTPUT);
+  pinMode(Echo_Left, INPUT);
+  pinMode(Trig_Right, OUTPUT);
+  pinMode(Echo_Right, INPUT);
 }
-
+ 
 void loop() {
-  L = sonarL.ping_cm();
-  R = sonarR.ping_cm();
-  if (L > R + 2) {
-    move_left(1000);
-  } else if (R > L) {
-    move_right(1000);
+  long leftDistance = measureDistance(Trig_Left, Echo_Left);
+  long rightDistance = measureDistance(Trig_Right, Echo_Right);
+ 
+  if (abs(leftDistance - rightDistance) > 5) {
+    if (leftDistance < rightDistance) {
+      moveRight();
+    } else {
+      moveLeft();
+    }
+  } else {
+    stopMoving();
+    Serial.println("Centered between walls.");
   }
-  Serial.print("L = ");
-  Serial.print(sonarL.ping_cm());
-  Serial.println(" cm");
-  Serial.print("R = ");
-  Serial.print(sonarR.ping_cm());
-  Serial.println(" cm");
-  delay(250);
+ 
+  delay(100);
+}
+ 
+long measureDistance(int trigPin, int echoPin) {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+ 
+  long duration = pulseIn(echoPin, HIGH);
+  long distance = duration * 0.034 / 2;
+  return distance;
+}
+ 
+void moveLeft() {
+  int d=200;
+  Serial.println("Moving Left");
+  for (int i = 90; i >= 60; i--){
+  servoFL.write(i);
+  servoFR.write(i);
+  servoBL.write(180 - i);
+  servoBR.write(180 - i);
+  }
+  if(d > 0) {
+    delay(d);
+    stopMoving();
+  }
+}
+ 
+void moveRight() {
+  int d=200;
+  Serial.println("Moving Right");
+  for (int i = 90; i >=60; i--){
+  servoFL.write(180 - i);
+  servoFR.write(180 - i);
+  servoBL.write(i);
+  servoBR.write(i);
+  }
+  if(d > 0) {
+    delay(d);
+    stopMoving();
+  }
+}
+ 
+void stopMoving() {
+  Serial.println("Stopping");
+  servoFL.write(90);
+  servoFR.write(90);
+  servoBL.write(90);
+  servoBR.write(90);
 }
