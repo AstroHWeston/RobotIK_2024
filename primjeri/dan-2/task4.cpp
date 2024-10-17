@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Servo.h>
+#include <SPI.h>
  
 #define Servo_FL 11
 #define Servo_FR 12
@@ -12,6 +13,54 @@
 #define Echo_Right 36
  
 Servo servoFL, servoFR, servoBL, servoBR;
+
+long measureDistance(int trigPin, int echoPin) {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+ 
+  long duration = pulseIn(echoPin, HIGH);
+  long distance = duration * 0.034 / 2;
+  return distance;
+}
+
+void stopMoving() {
+  Serial.println("Stopping");
+  servoFL.write(90);
+  servoFR.write(90);
+  servoBL.write(90);
+  servoBR.write(90);
+} 
+
+void moveLeft(int d = 0) {
+  Serial.println("Moving Left");
+  for (int i = 90; i >= 60; i--){
+  servoFL.write(i);
+  servoFR.write(i);
+  servoBL.write(180 - i);
+  servoBR.write(180 - i);
+  }
+  if(d > 0) {
+    delay(d);
+    stopMoving();
+  }
+}
+ 
+void moveRight(int d = 0) {
+  Serial.println("Moving Right");
+  for (int i = 90; i >=60; i--){
+  servoFL.write(180 - i);
+  servoFR.write(180 - i);
+  servoBL.write(i);
+  servoBR.write(i);
+  }
+  if(d > 0) {
+    delay(d);
+    stopMoving();
+  }
+}
  
 void setup() {
   Serial.begin(9600);
@@ -24,6 +73,7 @@ void setup() {
   pinMode(Trig_Right, OUTPUT);
   pinMode(Echo_Right, INPUT);
 }
+
  
 void loop() {
   long leftDistance = measureDistance(Trig_Left, Echo_Left);
@@ -41,54 +91,4 @@ void loop() {
   }
  
   delay(100);
-}
- 
-long measureDistance(int trigPin, int echoPin) {
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
- 
-  long duration = pulseIn(echoPin, HIGH);
-  long distance = duration * 0.034 / 2;
-  return distance;
-}
- 
-void moveLeft() {
-  int d=200;
-  Serial.println("Moving Left");
-  for (int i = 90; i >= 60; i--){
-  servoFL.write(i);
-  servoFR.write(i);
-  servoBL.write(180 - i);
-  servoBR.write(180 - i);
-  }
-  if(d > 0) {
-    delay(d);
-    stopMoving();
-  }
-}
- 
-void moveRight() {
-  int d=200;
-  Serial.println("Moving Right");
-  for (int i = 90; i >=60; i--){
-  servoFL.write(180 - i);
-  servoFR.write(180 - i);
-  servoBL.write(i);
-  servoBR.write(i);
-  }
-  if(d > 0) {
-    delay(d);
-    stopMoving();
-  }
-}
- 
-void stopMoving() {
-  Serial.println("Stopping");
-  servoFL.write(90);
-  servoFR.write(90);
-  servoBL.write(90);
-  servoBR.write(90);
 }
