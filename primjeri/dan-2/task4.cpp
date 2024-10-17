@@ -13,6 +13,7 @@
 #define Echo_Right 36
  
 Servo servoFL, servoFR, servoBL, servoBR;
+int x = 0;
 
 long measureDistance(int trigPin, int echoPin) {
   digitalWrite(trigPin, LOW);
@@ -89,6 +90,10 @@ void setup() {
 
  
 void loop() {
+  if (x == 0) {
+    move_fw(2000);
+    x = 1;
+  }
   long leftDistance = measureDistance(Trig_Left, Echo_Left);
   long rightDistance = measureDistance(Trig_Right, Echo_Right);
  
