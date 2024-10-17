@@ -4,28 +4,27 @@
 #include <WS2812-SOLDERED.h>      // LED traka
 #include <APDS9960-SOLDERED.h>    // senzor boje
 #include <Servo.h>                // servo motor
+#include <SPI.h>
+
 
 //HC-SR04 - ultrazvučni senzor
+#define MAX_DISTANCE 400
 const int uzvF = 0;
 const int uzvB = 1;
 const int uzvL = 2;
 const int uzvR = 3;
-const int trigPin[] = {31, 33, 35, 37};  
+const int trigPin[] = {31, 33, 35, 37};
 const int echoPin[] = {30, 32, 34, 36};
 
-// Maximum distance we want to ping for (in centimeters).
-#define MAX_DISTANCE 400  
-
-// NewPing setup of pins and maximum distance.
 NewPing sonarF(trigPin[uzvF], echoPin[uzvF], MAX_DISTANCE);
 NewPing sonarB(trigPin[uzvB], echoPin[uzvB], MAX_DISTANCE);
 NewPing sonarL(trigPin[uzvL], echoPin[uzvL], MAX_DISTANCE);
 NewPing sonarR(trigPin[uzvR], echoPin[uzvR], MAX_DISTANCE);
 
 // TCRT5000 senzor linije
-int kal[5] = {200,300,200,200,200};
-const int linApin[] = {A0,A1,A2,A3,A4};   // input
-const int linDpin[] = {41,43,45,47,49};   // output
+int kal[5] = {40, 300, 50, 45, 45};
+const int linApin[] = {A0, A1, A2, A3, A4};   // input
+const int linDpin[] = {41, 43, 45, 47, 49};   // output
 
 // servo motori
 #define Servo_sl 9
@@ -39,21 +38,26 @@ Servo motor_pd;
 int maxP = 120;
 int maxN = 180 - maxP;
 
-// inicijalizacija svega
-LiquidCrystal_I2C lcd(0x27, 2, 16); // Define LCD object
+// Inicijalizacija LCD-a
+LiquidCrystal_I2C lcd(0x27, 2, 16);
+
+// Inicijalizacija senzora boje
 APDS_9960 apds;
-#define PIN       4     // pin na koji je spojena LED traka
+
+// Inicijalizacija LED trake
+#define PIN 4
 #define NUMPIXELS 10
 WS2812 pixels(NUMPIXELS, PIN);
 
-#define GRANICA   15;     // duljina kod koje ragira na prepreku
-int nprog = 0;            // brojilo programa
-int start = 1;            // početak programa
-// boje ********************
-const int bR=1;
-const int bG=2;
-const int bB=3;
-const int bY=4;
+#define GRANICA 15;
+int nprog = 0;
+int start = 1;
+
+// Boje ********************
+const int bR = 1;
+const int bG = 2;
+const int bB = 3;
+const int bY = 4;
 // deklaracija funkcija ****
 void P1(void);
 void P2(void);
@@ -66,7 +70,6 @@ int prati_P3(void);
 int prati_P4(void);
 int boja(void);
 void okret_180();
-//**************************
 
 //***************************************************
 // LED traka - boje
@@ -211,7 +214,7 @@ void rotate_left(int d = 0) { // Rotacija lijevo
 }
 //***************************************************
 void okret_90() {
-  for (int i = 90; i >= maxN; i--) {
+  for (int i = 90; i >= 0; i--) {
     motor_pd.write(180 - i);
     motor_pl.write(180 - i);
     motor_sl.write(180 - i);
@@ -224,148 +227,141 @@ void okret_90() {
 void okret_180() {
   reset_display();
   lcd.print("OKRET!");
-  for (int i = 90; i <= maxP; i++) { //prije maxp je bilo 180
+  for (int i = 90; i <= 180; i++) { //prije maxp je bilo 180
     motor_pd.write(i);
     motor_pl.write(i);
     motor_sl.write(i);
     motor_sd.write(i);
   }
-  delay(3100);
+  delay(3300);
   motor_stop();
 }
 //***************************************************
 int pracenje() {
-  int kasni = 20;
+  int kasni = 200;
   int rez[5];
-  int odstup;
-  int n;
+  int odstup = 0;
+  int n = 0;
   
-  for(int i=0;i<5;i++) {
+  for(int i = 0; i < 5; i++) {
     digitalWrite(linDpin[i], HIGH);
-    delay(kasni);
-    rez[i] = analogRead(linApin[i]);  
   }
-  odstup = 0;
-  n = 0;
-  for(int i=0;i<5;i++) {
-    if(rez[i] > kal[i]) {
+  delay(kasni);
+
+  for(int i = 0; i < 5; i++) {
+    rez[i] = analogRead(linApin[i]);
+    //rez[i] = analogRead(linApin[i]) > kal[i] ? 1 : 0;
+    digitalWrite(linDpin[i], LOW);
+  }
+/*
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(rez[0]);
+  lcd.setCursor(6,0);
+  lcd.print(rez[2]);
+  lcd.setCursor(12,0);
+  lcd.print(rez[4]);
+  lcd.setCursor(3,1);
+  lcd.print(rez[1]);
+  lcd.setCursor(9,1);
+  lcd.print(rez[3]);
+  delay(100);*/
+
+  for(int i = 0; i < 5; i++) {
+    if(rez[i] > 0) {
       odstup += 2 * (i+1);
       n++;
     }
   }
-/*  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print(rez[0]);
-  lcd.setCursor(5,0);
-  lcd.print(rez[2]);
-  lcd.setCursor(10,0);
-  lcd.print(rez[4]);
-  lcd.setCursor(2,1);
-  lcd.print(rez[1]);
-  lcd.setCursor(7,1);
-  lcd.print(rez[3]); */
-  if(n==0) odstup=0;                  // odstup==0 - nema linije, sve je bijelo
-  else if(n==30) odstup=9;            // 9 - raskršće L i D
-  else if(n==24) odstup=1;            // 1 - invertirano područje 
-  else if (n>0) odstup = odstup/n;    // 4 - ras L, 5 - D, 6 - sredina, 7 - L, 8 - ras D 
-  lcd.setCursor(12,1);
-  lcd.print(odstup);
+
+  if(n == 0) odstup = 0;                        // odstup == 0 - nema linije, sve je bijelo
+  else if(odstup == 30) odstup = 9;             // 9 - raskršće L i D
+  else if(odstup == 24) odstup = 1;             // 1 - invertirano područje 
+  else if (n > 0) odstup = odstup / n;          // 4 - ras L, 5 - D, 6 - sredina, 7 - L, 8 - ras D 
   return odstup;
 }
 //***************************************************
 void setup() {
+  Serial.begin(9600);
   lcd.init();
   lcd.backlight();
-  Serial.begin(9600);
   lcd.setCursor(0, 0);
   lcd.print("Initializing...");
-  //TCRT5000 inicijalizacija
-  for(int i=0; i<5; i++) {
+  // Initialize line follower sensors
+  for(int i = 0; i < 5; i++) {
     pinMode(linApin[i], INPUT);
     pinMode(linDpin[i], OUTPUT);
   }
   
-  //APDS9960 inicijalizacija
-  if(!apds.begin()){
+  // Initialize color sensors
+  if(!apds.begin()) {
     lcd.setCursor(0, 1);
     lcd.print("Senzor boje?");
-  }
-  else {
+    while(1);
+  } else {
     lcd.setCursor(0, 1);
     lcd.print("Senzor boje OK!");
   }
-  if (!apds.begin()) { //Begin communication with sensor
-    lcd.setCursor(0,1);
-    lcd.println("Greska APDS-9960."); //Print message if sensor is not available
-    while(1); //Loop forever if there is problem with sensor
-  }
-  
   delay(1000);
-  // test LED trake
+
   pixels.begin();
-//  lcd.setCursor(0, 1);
-//  lcd.print("                ");
-//  lcd.print("LED traka");
   pixels.clear();
-//  lcd.setCursor(10, 1);
-//  lcd.print("Crvena");
   crvena();
-//  lcd.setCursor(10, 1);
-//  lcd.print("Zelena");
   zelena();
-//  lcd.setCursor(10, 1);
-//  lcd.print("Plava ");
   plava();
-  pixels.clear();
-  // spoji motore
+
+  // Attach servo motors
   motor_sl.attach(Servo_sl);
   motor_sd.attach(Servo_sd);
   motor_pl.attach(Servo_pl);
   motor_pd.attach(Servo_pd);
   reset_display();
+  pixels.clear();
 }
 
-
 void loop() {
-  
-  if (nprog == 0) {
-    prati_P1();
-    nprog = nprog + 1;
-  } else if (nprog == 1) {
+
+  //if (nprog == 0) {
     P1();
-    nprog = nprog + 1;
-  }
+    //nprog = nprog + 1;
+  //} else if (nprog == 1) {
+  //  return;
+    //P2();
+  //  nprog = nprog + 1;
+  //}
+  delay(200);
 }
 
 
 int prati_P1() {
   int d;
-  //**************************
-  start=0;      // testiranje
-  //***************************
-  while(start==1) {             // izađi iz startnog polja
-    move_fw(0);
-    delay(2000);
-    d=pracenje();
-    if(d!=0 && d!=9) start=0;
+  start = 0;
+  
+  while (start == 1) {             // izađi iz startnog polja
+    move_fw(1000);
+    d = pracenje();
+    if(d != 0 && d != 9) start = 0;
   }
-  if(start==0) {
-    d=pracenje();
+
+  if (start == 0) {
+    d = pracenje();
+    //reset_display();
+    lcd.print(d);
     switch(d) {
       case 0:
-        motor_stop();
+        //motor_stop();
         break;
-      case 6:
-        move_fw(0);           // idi ravno naprijed
+      case 6:                 // idi ravno naprijed
+        //move_fw();           
         break;
       case 5:                 // okreni malo lijevo
-        rotate_left(200);
+        //rotate_left(200);
         break;
       case 7:                 // okreni malo desno
-      rotate_right(200);
+        //rotate_right(200);
         break;
-      default:
-        move_fw(0);           // idi ravno naprijed
+      default:                // idi ravno naprijed
+         //move_back();
         break;
     }
   }
@@ -373,27 +369,32 @@ int prati_P1() {
 }
 
 void P1() {
-  int X;
+  int x;
   int bojica;
   
-  X=prati_P1();
-  bojica=boja();
-  if(boja()>0) {
-    if(bojica==bR) crvena();
-    if(bojica==bG) zelena();
-    if(bojica==bB) plava();
-    if(bojica==bY) zuta();
+  x = prati_P1();
+  bojica = boja();
+  if(boja() > 0) {
+    if(bojica == bR) crvena();
+    if(bojica == bG) zelena();
+    if(bojica == bB) plava();
+    if(bojica == bY) zuta();
     delay(1000);
     pixels.clear();
   }
-  if(X==0) {
+
+  switch (x) {
+    case 0:
+
+  }
+  if(x == 0) {
     motor_stop();
     delay(500);
     okret_180();
     reset_display();
     lcd.print("STAO SAM");
     for(;;);
-    nprog=1;
+    nprog = 1;
   }
 }
 
