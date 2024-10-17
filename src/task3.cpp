@@ -316,6 +316,4 @@ void loop() {
     delay(2000);
   }
   okret_180();
-  
-
 }

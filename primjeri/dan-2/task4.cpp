@@ -34,6 +34,19 @@ void stopMoving() {
   servoBR.write(90);
 } 
 
+void move_fw(int d = 0) { // Kretanje naprijed
+  for (int i = 90; i >= 0; i--) {
+    servoFR.write(i + 5);
+    servoFL.write(180 - i);
+    servoBL.write(180 - i);
+    servoBR.write(i + 5);
+  }
+  if (d > 0) {
+    delay(d);
+    stopMoving();
+  }
+}
+
 void moveLeft(int d = 0) {
   Serial.println("Moving Left");
   for (int i = 90; i >= 60; i--){
